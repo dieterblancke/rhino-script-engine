@@ -29,7 +29,6 @@ import org.mozilla.javascript.*;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,12 +41,15 @@ import java.util.Map;
  * @author (Original) A. Sundararajan
  * @author ibrahim Chaehoi
  */
-final class ExternalScriptable implements Scriptable {
-	
-	/** The Mozilla Rhino javascript package name */
+final class ExternalScriptable implements Scriptable
+{
+
+    /**
+     * The Mozilla Rhino javascript package name
+     */
     private static final String RHINO_JS_PACKAGE_NAME = "org.mozilla.javascript";
 
-	/* Underlying ScriptContext that we use to store
+    /* Underlying ScriptContext that we use to store
      * named variables of this scope.
      */
     private ScriptContext context;
@@ -68,30 +70,36 @@ final class ExternalScriptable implements Scriptable {
     // my parent scope, if any
     private Scriptable parent;
 
-    ExternalScriptable(ScriptContext context) {
-        this(context, new HashMap<Object, Object>());
+    ExternalScriptable( ScriptContext context )
+    {
+        this( context, new HashMap<Object, Object>() );
     }
 
-    ExternalScriptable(ScriptContext context, Map<Object, Object> indexedProps) {
-        if (context == null) {
-            throw new NullPointerException("context is null");
+    ExternalScriptable( ScriptContext context, Map<Object, Object> indexedProps )
+    {
+        if ( context == null )
+        {
+            throw new NullPointerException( "context is null" );
         }
         this.context = context;
         this.indexedProps = indexedProps;
     }
 
-    ScriptContext getContext() {
+    ScriptContext getContext()
+    {
         return context;
     }
 
-    private boolean isEmpty(String name) {
-        return name.equals("");
+    private boolean isEmpty( String name )
+    {
+        return name.equals( "" );
     }
 
     /**
      * Return the name of the class.
      */
-    public String getClassName() {
+    public String getClassName()
+    {
         return "Global";
     }
 
@@ -105,24 +113,38 @@ final class ExternalScriptable implements Scriptable {
      * @param start the object in which the lookup began
      * @return the value of the property (may be null), or NOT_FOUND
      */
-    public synchronized Object get(String name, Scriptable start) {
-        if (isEmpty(name)) {
-            if (indexedProps.containsKey(name)) {
-                return indexedProps.get(name);
-            } else {
+    public synchronized Object get( String name, Scriptable start )
+    {
+        if ( isEmpty( name ) )
+        {
+            if ( indexedProps.containsKey( name ) )
+            {
+                return indexedProps.get( name );
+            }
+            else
+            {
                 return NOT_FOUND;
             }
-        } else {
-            synchronized (context) {
-                int scope = context.getAttributesScope(name);
-                if (scope != -1) {
-                    Object value = context.getAttribute(name, scope);
-                    if(value.getClass().getPackage().getName().startsWith(RHINO_JS_PACKAGE_NAME)){
-                    	return value;
-                    }else{
-                        return Context.javaToJS(value, this);
+        }
+        else
+        {
+            synchronized ( context )
+            {
+                int scope = context.getAttributesScope( name );
+                if ( scope != -1 )
+                {
+                    Object value = context.getAttribute( name, scope );
+                    if ( value != null && value.getClass().getPackage().getName().startsWith( RHINO_JS_PACKAGE_NAME ) )
+                    {
+                        return value;
                     }
-                } else {
+                    else
+                    {
+                        return Context.javaToJS( value, this );
+                    }
+                }
+                else
+                {
                     return NOT_FOUND;
                 }
             }
@@ -136,11 +158,15 @@ final class ExternalScriptable implements Scriptable {
      * @param start the object in which the lookup began
      * @return the value of the property (may be null), or NOT_FOUND
      */
-    public synchronized Object get(int index, Scriptable start) {
-        Integer key = new Integer(index);
-        if (indexedProps.containsKey(index)) {
-            return indexedProps.get(key);
-        } else {
+    public synchronized Object get( int index, Scriptable start )
+    {
+        Integer key = index;
+        if ( indexedProps.containsKey( index ) )
+        {
+            return indexedProps.get( key );
+        }
+        else
+        {
             return NOT_FOUND;
         }
     }
@@ -152,12 +178,17 @@ final class ExternalScriptable implements Scriptable {
      * @param start the object in which the lookup began
      * @return true if and only if the property was found in the object
      */
-    public synchronized boolean has(String name, Scriptable start) {
-        if (isEmpty(name)) {
-            return indexedProps.containsKey(name);
-        } else {
-            synchronized (context) {
-                return context.getAttributesScope(name) != -1;
+    public synchronized boolean has( String name, Scriptable start )
+    {
+        if ( isEmpty( name ) )
+        {
+            return indexedProps.containsKey( name );
+        }
+        else
+        {
+            synchronized ( context )
+            {
+                return context.getAttributesScope( name ) != -1;
             }
         }
     }
@@ -169,9 +200,10 @@ final class ExternalScriptable implements Scriptable {
      * @param start the object in which the lookup began
      * @return true if and only if the property was found in the object
      */
-    public synchronized boolean has(int index, Scriptable start) {
-        Integer key = new Integer(index);
-        return indexedProps.containsKey(key);
+    public synchronized boolean has( int index, Scriptable start )
+    {
+        Integer key = new Integer( index );
+        return indexedProps.containsKey( key );
     }
 
     /**
@@ -181,23 +213,33 @@ final class ExternalScriptable implements Scriptable {
      * @param start the object whose property is being set
      * @param value value to set the property to
      */
-    public void put(String name, Scriptable start, Object value) {
-        if (start == this) {
-            synchronized (this) {
-                if (isEmpty(name)) {
-                    indexedProps.put(name, value);
-                } else {
-                    synchronized (context) {
-                        int scope = context.getAttributesScope(name);
-                        if (scope == -1) {
+    public void put( String name, Scriptable start, Object value )
+    {
+        if ( start == this )
+        {
+            synchronized ( this )
+            {
+                if ( isEmpty( name ) )
+                {
+                    indexedProps.put( name, value );
+                }
+                else
+                {
+                    synchronized ( context )
+                    {
+                        int scope = context.getAttributesScope( name );
+                        if ( scope == -1 )
+                        {
                             scope = ScriptContext.ENGINE_SCOPE;
                         }
-                        context.setAttribute(name, jsToJava(value), scope);
+                        context.setAttribute( name, jsToJava( value ), scope );
                     }
                 }
             }
-        } else {
-            start.put(name, start, value);
+        }
+        else
+        {
+            start.put( name, start, value );
         }
     }
 
@@ -208,13 +250,18 @@ final class ExternalScriptable implements Scriptable {
      * @param start the object whose property is being set
      * @param value value to set the property to
      */
-    public void put(int index, Scriptable start, Object value) {
-        if (start == this) {
-            synchronized (this) {
-                indexedProps.put(new Integer(index), value);
+    public void put( int index, Scriptable start, Object value )
+    {
+        if ( start == this )
+        {
+            synchronized ( this )
+            {
+                indexedProps.put( new Integer( index ), value );
             }
-        } else {
-            start.put(index, start, value);
+        }
+        else
+        {
+            start.put( index, start, value );
         }
     }
 
@@ -225,14 +272,20 @@ final class ExternalScriptable implements Scriptable {
      *
      * @param name the name of the property
      */
-    public synchronized void delete(String name) {
-        if (isEmpty(name)) {
-            indexedProps.remove(name);
-        } else {
-            synchronized (context) {
-                int scope = context.getAttributesScope(name);
-                if (scope != -1) {
-                    context.removeAttribute(name, scope);
+    public synchronized void delete( String name )
+    {
+        if ( isEmpty( name ) )
+        {
+            indexedProps.remove( name );
+        }
+        else
+        {
+            synchronized ( context )
+            {
+                int scope = context.getAttributesScope( name );
+                if ( scope != -1 )
+                {
+                    context.removeAttribute( name, scope );
                 }
             }
         }
@@ -245,8 +298,9 @@ final class ExternalScriptable implements Scriptable {
      *
      * @param index the numeric index for the property
      */
-    public void delete(int index) {
-        indexedProps.remove(new Integer(index));
+    public void delete( int index )
+    {
+        indexedProps.remove( new Integer( index ) );
     }
 
     /**
@@ -254,7 +308,8 @@ final class ExternalScriptable implements Scriptable {
      *
      * @return the prototype
      */
-    public Scriptable getPrototype() {
+    public Scriptable getPrototype()
+    {
         return prototype;
     }
 
@@ -263,7 +318,8 @@ final class ExternalScriptable implements Scriptable {
      *
      * @param prototype the prototype to set
      */
-    public void setPrototype(Scriptable prototype) {
+    public void setPrototype( Scriptable prototype )
+    {
         this.prototype = prototype;
     }
 
@@ -272,7 +328,8 @@ final class ExternalScriptable implements Scriptable {
      *
      * @return the parent scope
      */
-    public Scriptable getParentScope() {
+    public Scriptable getParentScope()
+    {
         return parent;
     }
 
@@ -281,7 +338,8 @@ final class ExternalScriptable implements Scriptable {
      *
      * @param parent the parent scope to set
      */
-    public void setParentScope(Scriptable parent) {
+    public void setParentScope( Scriptable parent )
+    {
         this.parent = parent;
     }
 
@@ -294,14 +352,16 @@ final class ExternalScriptable implements Scriptable {
      * @return an array of Objects. Each entry in the array is either
      * a java.lang.String or a java.lang.Number
      */
-    public synchronized Object[] getIds() {
+    public synchronized Object[] getIds()
+    {
         String[] keys = getAllKeys();
         int size = keys.length + indexedProps.size();
         Object[] res = new Object[size];
-        System.arraycopy(keys, 0, res, 0, keys.length);
+        System.arraycopy( keys, 0, res, 0, keys.length );
         int i = keys.length;
         // now add all indexed properties
-        for (Object index : indexedProps.keySet()) {
+        for ( Object index : indexedProps.keySet() )
+        {
             res[i++] = index;
         }
         return res;
@@ -320,36 +380,54 @@ final class ExternalScriptable implements Scriptable {
      * @param typeHint the type hint
      * @return the default value
      */
-    public Object getDefaultValue(Class typeHint) {
-        for (int i = 0; i < 2; i++) {
+    public Object getDefaultValue( Class typeHint )
+    {
+        for ( int i = 0; i < 2; i++ )
+        {
             boolean tryToString;
-            if (typeHint == ScriptRuntime.StringClass) {
-                tryToString = (i == 0);
-            } else {
-                tryToString = (i == 1);
+            if ( typeHint == ScriptRuntime.StringClass )
+            {
+                tryToString = ( i == 0 );
+            }
+            else
+            {
+                tryToString = ( i == 1 );
             }
 
             String methodName;
             Object[] args;
-            if (tryToString) {
+            if ( tryToString )
+            {
                 methodName = "toString";
                 args = ScriptRuntime.emptyArgs;
-            } else {
+            }
+            else
+            {
                 methodName = "valueOf";
                 args = new Object[1];
                 String hint;
-                if (typeHint == null) {
+                if ( typeHint == null )
+                {
                     hint = "undefined";
-                } else if (typeHint == ScriptRuntime.StringClass) {
+                }
+                else if ( typeHint == ScriptRuntime.StringClass )
+                {
                     hint = "string";
-                } else if (typeHint == ScriptRuntime.ScriptableClass) {
+                }
+                else if ( typeHint == ScriptRuntime.ScriptableClass )
+                {
                     hint = "object";
-                } else if (typeHint == ScriptRuntime.FunctionClass) {
+                }
+                else if ( typeHint == ScriptRuntime.FunctionClass )
+                {
                     hint = "function";
-                } else if (typeHint == ScriptRuntime.BooleanClass
-                        || typeHint == Boolean.TYPE) {
+                }
+                else if ( typeHint == ScriptRuntime.BooleanClass
+                        || typeHint == Boolean.TYPE )
+                {
                     hint = "boolean";
-                } else if (typeHint == ScriptRuntime.NumberClass ||
+                }
+                else if ( typeHint == ScriptRuntime.NumberClass ||
                         typeHint == ScriptRuntime.ByteClass ||
                         typeHint == Byte.TYPE ||
                         typeHint == ScriptRuntime.ShortClass ||
@@ -359,46 +437,56 @@ final class ExternalScriptable implements Scriptable {
                         typeHint == ScriptRuntime.FloatClass ||
                         typeHint == Float.TYPE ||
                         typeHint == ScriptRuntime.DoubleClass ||
-                        typeHint == Double.TYPE) {
+                        typeHint == Double.TYPE )
+                {
                     hint = "number";
-                } else {
+                }
+                else
+                {
                     throw Context.reportRuntimeError(
                             "Invalid JavaScript value of type " +
-                                    typeHint.toString());
+                                    typeHint.toString() );
                 }
                 args[0] = hint;
             }
-            Object v = ScriptableObject.getProperty(this, methodName);
-            if (!(v instanceof Function))
+            Object v = ScriptableObject.getProperty( this, methodName );
+            if ( !( v instanceof Function ) )
                 continue;
             Function fun = (Function) v;
             Context cx = RhinoScriptEngine.enterContext();
-            try {
-                v = fun.call(cx, fun.getParentScope(), this, args);
-            } finally {
+            try
+            {
+                v = fun.call( cx, fun.getParentScope(), this, args );
+            }
+            finally
+            {
                 cx.exit();
             }
-            if (v != null) {
-                if (!(v instanceof Scriptable)) {
+            if ( v != null )
+            {
+                if ( !( v instanceof Scriptable ) )
+                {
                     return v;
                 }
-                if (typeHint == ScriptRuntime.ScriptableClass
-                        || typeHint == ScriptRuntime.FunctionClass) {
+                if ( typeHint == ScriptRuntime.ScriptableClass
+                        || typeHint == ScriptRuntime.FunctionClass )
+                {
                     return v;
                 }
-                if (tryToString && v instanceof Wrapper) {
+                if ( tryToString && v instanceof Wrapper )
+                {
                     // Let a wrapped java.lang.String pass for a primitive
                     // string.
-                    Object u = ((Wrapper) v).unwrap();
-                    if (u instanceof String)
+                    Object u = ( (Wrapper) v ).unwrap();
+                    if ( u instanceof String )
                         return u;
                 }
             }
         }
         // fall through to error
-        String arg = (typeHint == null) ? "undefined" : typeHint.getName();
+        String arg = ( typeHint == null ) ? "undefined" : typeHint.getName();
         throw Context.reportRuntimeError(
-                "Cannot find default value for object " + arg);
+                "Cannot find default value for object " + arg );
     }
 
     /**
@@ -408,32 +496,39 @@ final class ExternalScriptable implements Scriptable {
      *                 operator
      * @return true if "this" appears in value's prototype chain
      */
-    public boolean hasInstance(Scriptable instance) {
+    public boolean hasInstance( Scriptable instance )
+    {
         // Default for JS objects (other than Function) is to do prototype
         // chasing.
         Scriptable proto = instance.getPrototype();
-        while (proto != null) {
-            if (proto.equals(this)) return true;
+        while ( proto != null )
+        {
+            if ( proto.equals( this ) ) return true;
             proto = proto.getPrototype();
         }
         return false;
     }
 
-    private String[] getAllKeys() {
+    private String[] getAllKeys()
+    {
         ArrayList<String> list = new ArrayList<String>();
-        synchronized (context) {
-            for (int scope : context.getScopes()) {
-                Bindings bindings = context.getBindings(scope);
-                if (bindings != null) {
-                    list.ensureCapacity(bindings.size());
-                    for (String key : bindings.keySet()) {
-                        list.add(key);
+        synchronized ( context )
+        {
+            for ( int scope : context.getScopes() )
+            {
+                Bindings bindings = context.getBindings( scope );
+                if ( bindings != null )
+                {
+                    list.ensureCapacity( bindings.size() );
+                    for ( String key : bindings.keySet() )
+                    {
+                        list.add( key );
                     }
                 }
             }
         }
         String[] res = new String[list.size()];
-        list.toArray(res);
+        list.toArray( res );
         return res;
     }
 
@@ -444,14 +539,17 @@ final class ExternalScriptable implements Scriptable {
      * But, at the same time, we need to make few special cases
      * and hence the following function is used.
      */
-    private Object jsToJava(Object jsObj) {
-        if (jsObj instanceof Wrapper) {
+    private Object jsToJava( Object jsObj )
+    {
+        if ( jsObj instanceof Wrapper )
+        {
             Wrapper njb = (Wrapper) jsObj;
             /* importClass feature of ImporterTopLevel puts
              * NativeJavaClass in global scope. If we unwrap
              * it, importClass won't work.
              */
-            if (njb instanceof NativeJavaClass) {
+            if ( njb instanceof NativeJavaClass )
+            {
                 return njb;
             }
 
@@ -465,15 +563,20 @@ final class ExternalScriptable implements Scriptable {
              * will print 'number'. We don't want that to happen.
              */
             Object obj = njb.unwrap();
-            if (obj instanceof Number || obj instanceof String ||
-                    obj instanceof Boolean || obj instanceof Character) {
+            if ( obj instanceof Number || obj instanceof String ||
+                    obj instanceof Boolean || obj instanceof Character )
+            {
                 // special type wrapped -- we just leave it as is.
                 return njb;
-            } else {
+            }
+            else
+            {
                 // return unwrapped object for any other object.
                 return obj;
             }
-        } else { // not-a-Java-wrapper
+        }
+        else
+        { // not-a-Java-wrapper
             return jsObj;
         }
     }

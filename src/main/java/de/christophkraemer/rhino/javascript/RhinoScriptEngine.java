@@ -198,8 +198,14 @@ import java.util.Map;
 
     private static int getLanguageVersion() {
         int version;
-        String tmp = AccessController.doPrivileged(
-                new sun.security.action.GetPropertyAction(RHINO_JS_VERSION));
+        String tmp = AccessController.doPrivileged( new PrivilegedAction<String>()
+        {
+            @Override
+            public String run()
+            {
+                return System.getProperty( RHINO_JS_VERSION );
+            }
+        } );
         if (tmp != null) {
             version = Integer.parseInt((String) tmp);
         } else {

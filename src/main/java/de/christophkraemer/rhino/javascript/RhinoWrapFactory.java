@@ -30,8 +30,6 @@ import org.mozilla.javascript.*;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 
-import static sun.security.util.SecurityConstants.GET_CLASSLOADER_PERMISSION;
-
 /**
  * This wrap factory is used for security reasons. JSR 223 script
  * engine interface and JavaScript engine classes are run as bootstrap
@@ -62,11 +60,6 @@ final class RhinoWrapFactory extends WrapFactory {
         SecurityManager sm = System.getSecurityManager();
         ClassShutter classShutter = RhinoClassShutter.getInstance();
         if (javaObject instanceof ClassLoader) {
-            // Check with Security Manager whether we can expose a
-            // ClassLoader...
-            if (sm != null) {
-                sm.checkPermission(GET_CLASSLOADER_PERMISSION);
-            }
             // if we fall through here, check permission succeeded.
             return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
         } else {
